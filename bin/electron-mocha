@@ -3,6 +3,7 @@
 var path = require('path')
 var spawn = require('child_process').spawn
 var which = require('which')
+var fs = require('fs-extra')
 
 which('electron', function (err, resolvedPath) {
   if (!resolvedPath && !process.env.ELECTRON_PATH) {
@@ -32,5 +33,20 @@ function runElectron (resolvedPath) {
     if (str.match(/^\[\d+\:\d+/)) return
     process.stderr.write(data)
   })
-  electron.on('exit', function (code) { process.exit(code) })
+  electron.on('exit', function (code) { removeTempData(code) })
+}
+
+function removeTempData(code) {
+	var urlcontainer = path.resolve(path.join(__dirname, '../data_dir'))
+    var dir = fs.readFileSync(urlcontainer, 'utf8')
+
+    fs.remove(dir, function (err) {
+      if (err) console.error(err)
+      else
+        fs.remove(urlcontainer, function (err) {
+          if (err) console.error(err)
+        })
+
+      process.exit(code)
+    })
 }

@@ -33,9 +33,7 @@ getOptions()
 // parse args
 var opts = args.parse(process.argv)
 
-var browserDataPath = path.join(os.tmpdir(), 'electron-mocha-' + Date.now().toString())
-app.setPath('userData', browserDataPath)
-
+app.setPath('userData', createDataPath())
 app.on('ready', function () {
   if (!opts.renderer) {
     opts.require.forEach(function (mod) {
@@ -66,8 +64,20 @@ function writeError (data) {
 }
 
 function exit (code) {
-  fs.remove(browserDataPath, function (err) {
-    if (err) console.error(err)
-    process.exit(code)
-  })
+  process.exit(code)
+}
+
+function createDataPath() {
+  var temppath = path.join(os.tmpdir(), 'electron-mocha-' + Date.now().toString())
+  return saveDataPathDir(temppath)
+}
+
+function saveDataPathDir(temppath) {
+    var filePath = path.resolve(path.join(__dirname, './data_dir'))
+
+    fs.writeFile(filePath, temppath, function(err) {
+        if(err) console.error(err)
+    })
+
+    return temppath
 }
